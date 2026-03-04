@@ -38,6 +38,7 @@ USER_PROMPT = """##RAG CONTEXT:
 
 def main():
     embeddings_client = DialEmbeddingsClient(deployment_name='text-embedding-3-small-1', api_key=API_KEY)
+    embeddings_search_client = DialEmbeddingsClient(deployment_name='text-embedding-005', api_key=API_KEY)
     chat_completion_client = DialChatCompletionClient(deployment_name='gpt-4', api_key=API_KEY)
     db_config = {
         'host': 'localhost',
@@ -47,6 +48,7 @@ def main():
         'password': 'postgres'
     }
     text_processor = TextProcessor(embeddings_client, db_config)
+    text_search_processor = TextProcessor(embeddings_search_client, db_config)
 
     conversation = Conversation()
 
@@ -58,7 +60,7 @@ def main():
             file_path='./task/embeddings/microwave_manual.txt',
             chunk_size=400,
             overlap=40,
-            dimensions=1536,
+            dimensions=384,
             truncate_table=True
         )
         print("="*100)
@@ -75,12 +77,12 @@ def main():
             break
 
         # Retrieve context using text_processor.search()
-        context_chunks = text_processor.search(
+        context_chunks = text_search_processor.search(
             search_mode=SearchMode.EUCLIDIAN_DISTANCE,
             user_request=user_input,
             top_k=5,
             score_threshold=0.01,
-            dimensions=1536
+            dimensions=384
         )
 
         print(f"Retrieved context chunks: {context_chunks}")  # Debugging line to check retrieved context --- IGNORE ---
